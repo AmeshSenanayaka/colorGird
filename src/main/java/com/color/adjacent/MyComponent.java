@@ -2,6 +2,8 @@ package com.color.adjacent;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Random;
 
 /* ==============================================================
  *  Author :Amesh Senanayaka
@@ -11,29 +13,35 @@ import java.awt.*;
  **/
 public class MyComponent extends JPanel {
 
-    private int row = 5;
-    private int col = 5;
-    public final Color[][] gridColors = randomGridColors(row, col);
+    private final  Node[][] gridNodes = new Node[AdjacentApplication.getRow()][AdjacentApplication.getCol()];
 
-    /*
-     * Create 2d Color Array
-     */
-    private Color[][] randomGridColors(int rows, int columns) {
-        Color[][] gridColors = new Color[rows][columns];
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < columns; j++) {
-                gridColors [i][j] = randomColor();
-            }
-        }
-        return gridColors;
+    public MyComponent() {
+
+    	for(int y =0;y<AdjacentApplication.getRow() ;y++){
+
+            for(int x=0;x<AdjacentApplication.getCol();x++){
+            	Color color = randomColor();
+                gridNodes[y][x]=new Node(x,y,color);
+           }
+    	}
     }
 
-    /*
+    public Node[][] getGridNodes() {
+		return gridNodes;
+	}
+
+
+	/*
      * Create Random Color
      */
     private Color randomColor() {
-        int rgbValue = (int) (Math.random() * 256);
-        return new Color(rgbValue, rgbValue, rgbValue);
+
+        int[] intArray = {255, 0 , 100};
+
+        int idx = new Random().nextInt(intArray.length);
+        
+        
+        return new Color(intArray[idx], intArray[idx], intArray[idx]);
     }
 
     /*
@@ -42,12 +50,11 @@ public class MyComponent extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
           super.paintComponent(g);
-
-           for(int x =0;x<5;x++){
-                for(int y=0;y<5;y++){
-                    g.setColor(gridColors[y][x]);
+           for(int y =0;y<AdjacentApplication.getRow();y++){
+                for(int x=0;x<AdjacentApplication.getCol();x++){
+                	Color color = gridNodes[y][x].getColor();
+                    g.setColor(color);
                     g.fillRect(50*x, 50*y, 50, 50);
-
                 }
 
         }

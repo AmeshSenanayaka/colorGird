@@ -1,81 +1,112 @@
 package com.color.adjacent;
 
-import java.awt.*;
-import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.*;
+import java.util.List;
 
 /* ==============================================================
  *  Author :Amesh Senanayaka
- *  Date   : 29/01/2022 - 19:01 PM
- *  Description :Color Counter
+ *  Date   : 29/01/2022 - 19:00 PM
+ *  Description :Grid Color Filter
  * ==============================================================
  **/
 public class ColorFinder {
 
-    public Map<Color,Integer>  findMaxAdjacentSameColor(Color[][] gridColors){
+	private final Logger logger = LoggerFactory.getLogger(ColorFinder.class);
+	/*
+	 * Iterate Grid Node and Find same color blocks count
+	 */
+    public Map<String,Integer> findBlockColors(Node[][] gridColors){
 
-        Map<Color,Integer> colorCountMap = new HashMap<>();
+		logger.info("call findBlockColor()");
+		int block =1;
+        Map<String,Integer> colorCount = new HashMap<>();
 
+        for(int y=0;y<AdjacentApplication.getRow();y++){
 
+            for(int x =0;x<AdjacentApplication.getCol();x++){
+            	
+            	Node node = gridColors[y][x];
+            	int blockCount = 0;
+            	if(node.isMark())
+            		continue;
+            	
+            	List<Node> sameNodesFromAround = new ArrayList<>();
+				getSameColorNeighbors(node,gridColors,sameNodesFromAround);//get same color node from around
 
-        for(int row=0;row<5;row++){
-
-            int adjacentColor =0;
-            Color thisColor =null;
-            Color preCellColor =null;
-            for(int col =0;col<5;col++){
-                thisColor = gridColors[row][col];
-                if(preCellColor.equals(thisColor)) {
-                    adjacentColor = adjacentColor + 1;
-                }else{
-                    adjacentColor =0;
-                }
-
-                //up to
-                for(int nextRow=row+1;nextRow<5;row++){
-                    Color downColor = gridColors[nextRow][col];
-                    if(!downColor.equals(thisColor))
-                        break;
-
-
-                    adjacentColor =adjacentColor+1;
-
-                    for(int preCol =col-1;preCol>0;preCol--){
-                        Color preColor = gridColors[nextRow][preCol];
-                        if(!preColor.equals(thisColor))
-                            break;
-
-                        adjacentColor =adjacentColor+1;
-                    }
-
-                    for(int nextCol =col+1;nextCol<5;nextCol++){
-                        Color nextColor = gridColors[nextRow][nextCol];
-                        if(!nextColor.equals(thisColor))
-                            break;
-
-                        adjacentColor =adjacentColor+1;
-                    }
-
-
-                }
-
-                preCellColor = thisColor;
-
-
-
+            	if(sameNodesFromAround.isEmpty())
+            		blockCount++;
+            
+            	for(Node cn: sameNodesFromAround) {
+            		blockCount++;
+            	}
+            	
+            	colorCount.put((block++) + node.getColor().toString(), blockCount);
+            	
+            }	
 
         }
-
-            int  count = colorCountMap.get(thisColor)!=null?colorCountMap.get(thisColor):0;
-            if(count<adjacentColor)
-                colorCountMap.put(thisColor,adjacentColor);
-
+		logger.info("end findBlockColor()");
+        return colorCount;
     }
 
 
+	/*
+	 * Find same color neighbor by a node
+	 */
+    private void getSameColorNeighbors(Node node, Node[][] gridColors, List<Node> sameNodesFromAround) {
+    	List<Node> sameColorNodes = new ArrayList<>();
+		logger.info("call getSameColorNeighbors() for "+node.toString());
 
-      return colorCountMap;
+		if(node.getY() > 0 ) {
+    		Node upNode = gridColors[node.getY()-1][node.getX()];
+    		if(!upNode.isMark() && upNode.getColor().equals(node.getColor())) {
+        		sameColorNodes.add(upNode);
+        		upNode.setMark(true);
+        	}
+    	}
+    	
+    	if(node.getY() < AdjacentApplication.getRow()-1 ) {
+    		Node downNode = gridColors[node.getY()+1][node.getX()];
+    		if(!downNode.isMark() && downNode.getColor().equals(node.getColor())) {
+        		sameColorNodes.add(downNode);
+        		downNode.setMark(true);
+        	}
+    	}
+    	
+    	if(node.getX()>0) {
+    		Node leftNode = gridColors[node.getY()][node.getX()-1];
+    		if(!leftNode.isMark() && leftNode.getColor().equals(node.getColor())) {
+        		sameColorNodes.add(leftNode);
+        		leftNode.setMark(true);
+        	}
+    	}
+    	
+    	if(node.getX() < AdjacentApplication.getCol()-1) {
+    		Node rightNode = gridColors[node.getY()][node.getX()+1];
+    		if(!rightNode.isMark() && rightNode.getColor().equals(node.getColor())) {
+        		sameColorNodes.add(rightNode);
+        		rightNode.setMark(true);
+        	}
+    	}
+    	
+    	sameNodesFromAround.addAll(sameColorNodes);
+    	
+    	if(!sameColorNodes.isEmpty()) {
+    		for(Node n :sameColorNodes) {
+				getSameColorNeighbors(n,gridColors,sameNodesFromAround);
+    			
+    		}
+    	}
 
-    }
+		logger.info("end getSameColorNeighbors() ");
+    	
+	}
+
+
+
+
 
 }
